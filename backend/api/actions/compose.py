@@ -131,6 +131,20 @@ def compose_app_action(
                 raise HTTPException(400, exc.stderr.decode("UTF-8").rstrip())
             else:
                 raise HTTPException(400, exc)
+    elif action == "build":
+        try:
+            _action = docker_compose(
+                "build",
+                "--pull",
+                app,
+                _cwd=os.path.dirname(compose["path"]),
+                _env=check_dockerhost(env),
+            )
+        except Exception as exc:
+            if hasattr(exc, "stderr"):
+                raise HTTPException(400, exc.stderr.decode("UTF-8").rstrip())
+            else:
+                raise HTTPException(400, exc)
     elif action == "rm":
         try:
             _action = docker_compose(

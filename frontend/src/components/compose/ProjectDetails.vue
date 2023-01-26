@@ -80,6 +80,16 @@
                 </v-list-item>
                 <v-list-item
                   @click="
+                    ProjectAction({ Name: project.name, Action: 'build' })
+                  "
+                >
+                  <v-list-item-icon>
+                    <v-icon>mdi-hammer-wrench</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-title>Build</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  @click="
                     ProjectAction({ Name: project.name, Action: 'create' })
                   "
                 >
@@ -292,13 +302,13 @@
                 <v-list-item v-if="project.services[service].env_file">
                   <v-list-item-content> Env File </v-list-item-content>
                   <v-list-item-content>
-                    {{ project.services[service].env_file }}
+                    {{ project.services[service].env_file.join(", ") }}
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="project.services[service].depends_on">
                   <v-list-item-content> Depends on </v-list-item-content>
                   <v-list-item-content>
-                    {{ project.services[service].depends_on.join(", ") }}
+                    {{ Object.keys(project.services[service].depends_on).join(", ") }}
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="project.services[service].restart">

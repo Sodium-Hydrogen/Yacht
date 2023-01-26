@@ -124,6 +124,16 @@
                     </v-list-item>
                     <v-list-item
                       @click="
+                        ProjectAction({ Name: item.name, Action: 'build' })
+                      "
+                    >
+                      <v-list-item-icon>
+                        <v-icon>mdi-hammer-wrench</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-title>Build</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      @click="
                         ProjectAction({ Name: item.name, Action: 'create' })
                       "
                     >
