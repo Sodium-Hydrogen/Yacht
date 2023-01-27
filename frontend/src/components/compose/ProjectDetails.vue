@@ -176,6 +176,7 @@
               <v-row no-gutters style="max-height: 20px">
                 <v-col cols="2">{{ service }} </v-col>
                 <v-col cols="5" class="text--secondary">
+                  ({{ project.services[service].image || getImage(service) || "No Image" }})
                   ({{ project.services[service].image || "No Image" }})
                 </v-col>
                 <v-col cols="2" class="text--secondary">
@@ -582,7 +583,8 @@ export default {
       readProject: "projects/readProject",
       projectAppAction: "projects/ProjectAppAction",
       ProjectAction: "projects/ProjectAction",
-      readApps: "apps/readApps"
+      readApps: "apps/readApps",
+      readImages: "images/readImages"
     }),
     editProject(projectname) {
       this.$router.push({ path: `/projects/${projectname}/edit` });
@@ -604,6 +606,17 @@ export default {
             this.project.name.toLowerCase() + "_" + name + "_1"
         ) {
           return this.apps[app].State.Status;
+        }
+      }
+    },
+    getImage(name) {
+      for (var app in this.apps) {
+        if (
+          this.apps[app].name == name ||
+          this.apps[app].name ==
+            this.project.name.toLowerCase() + "_" + name + "_1"
+        ) {
+          return this.apps[app].Config.Image;
         }
       }
     },

@@ -132,7 +132,7 @@ const actions = {
         const projects = response.data;
         commit("setProjects", projects);
         dispatch("apps/readApps", null, { root: true });
-        commit("snackbar/setMessage", `${Name} has been ${Action}ed.`, {
+        commit("snackbar/setMessage", `${Name} has been ${past_tense_action}.`, {
           root: true
         });
       })
