@@ -177,7 +177,6 @@
                 <v-col cols="2">{{ service }} </v-col>
                 <v-col cols="5" class="text--secondary">
                   ({{ project.services[service].image || getImage(service) || "No Image" }})
-                  ({{ project.services[service].image || "No Image" }})
                 </v-col>
                 <v-col cols="2" class="text--secondary">
                   {{
@@ -254,9 +253,24 @@
                         Action: 'pull'
                       })
                     "
+                    v-if="project.services[service].image"
                   >
                     <v-icon small>mdi-update</v-icon>
                     pull
+                  </v-btn>
+                  <v-btn
+                    small
+                    @click="
+                      projectAppAction({
+                        Project: project.name,
+                        Name: service,
+                        Action: 'build'
+                      })
+                    "
+                    v-else
+                  >
+                    <v-icon small>mdi-hammer-wrench</v-icon>
+                    build
                   </v-btn>
                   <v-divider vertical />
                   <v-btn
@@ -570,6 +584,7 @@ export default {
   computed: {
     ...mapState("projects", ["project", "projects", "isLoading", "action"]),
     ...mapState("apps", ["apps"]),
+    ...mapState("images", ["images"]),
     ...mapGetters({
       getProjectByName: "projects/getProjectByName"
     }),
@@ -599,24 +614,41 @@ export default {
       return typeof val === "function" || typeof val === "object";
     },
     getStatus(name) {
+      var project_regex = new RegExp(
+        `${this.project.name}[_-]${name}[_-]\\d+`,
+        "i"
+      );
       for (var app in this.apps) {
         if (
           this.apps[app].name == name ||
-          this.apps[app].name ==
-            this.project.name.toLowerCase() + "_" + name + "_1"
+          this.apps[app].name.match(project_regex)
         ) {
           return this.apps[app].State.Status;
         }
       }
     },
     getImage(name) {
+      var project_regex = new RegExp(
+        `${this.project.name}[_-]${name}[_-]\\d+`,
+        "i"
+      );
+      var image_regex = new RegExp(
+        `${this.project.name}[_-]${name}:\\w+`,
+        "i"
+      );
       for (var app in this.apps) {
         if (
           this.apps[app].name == name ||
-          this.apps[app].name ==
-            this.project.name.toLowerCase() + "_" + name + "_1"
+          this.apps[app].name.match(project_regex)
         ) {
           return this.apps[app].Config.Image;
+        }
+      }
+      for (var image in this.images) {
+        for (var tag in this.images[image].RepoTags) {
+          if (this.images[image].RepoTags[tag].match(image_regex)) {
+            return this.images[image].RepoTags[tag].replace(":latest", "");
+          }
         }
       }
     },
@@ -625,6 +657,7 @@ export default {
       const projectName = this.$route.params.projectName;
       this.readProject(projectName);
       this.readApps();
+      this.readImages();
     }
   },
   mounted() {
@@ -632,6 +665,7 @@ export default {
     this.readProject(projectName);
 
     this.readApps();
+    this.readImages();
   }
 };
 </script>

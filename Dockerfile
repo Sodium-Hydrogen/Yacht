@@ -1,6 +1,11 @@
 # Build Vue
 FROM node:14.5.0-alpine as build-stage
 
+# Download docker for building images from compose files
+# Not everything is needed so /usr/bin/docker can be copied
+# out later to keep the overall image size small
+RUN apk add docker-cli
+
 ARG VUE_APP_VERSION
 ENV VUE_APP_VERSION=${VUE_APP_VERSION}
 
@@ -9,11 +14,6 @@ COPY ./frontend/package*.json ./
 RUN npm install
 COPY ./frontend/ .
 RUN npm run build
-
-# Download docker for building images from compose files
-# Not everything is needed so /usr/bin/docker can be copied
-# out later to keep the overall image size small
-RUN apk add docker-cli
 
 # Setup Container and install Flask
 FROM lsiobase/alpine:3.16 as deploy-stage

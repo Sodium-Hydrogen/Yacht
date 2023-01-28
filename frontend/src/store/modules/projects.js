@@ -131,6 +131,7 @@ const actions = {
       .then(response => {
         const projects = response.data;
         commit("setProjects", projects);
+        dispatch("images/readImages", null, { root: true });
         dispatch("apps/readApps", null, { root: true });
         commit("snackbar/setMessage", `${Name} has been ${past_tense_action}.`, {
           root: true
@@ -149,13 +150,23 @@ const actions = {
     commit("setLoading", true);
     commit("setAction", Action);
     const url = `/api/compose/${Project}/actions/${Action}/${Name}`;
+    var past_tense_action;
+    switch(Action){
+      case "up":     past_tense_action = "upped";   break;
+      case "stop":   past_tense_action = "stopped"; break;
+      case "build":  past_tense_action = "built";   break;
+      case "create": past_tense_action = "created"; break;
+      case "rm":     past_tense_action = "removed"; break;
+      default: past_tense_action = `${Action}ed`;
+    }
     axios
       .get(url)
       .then(response => {
         const projects = response.data;
         commit("setProjects", projects);
+        dispatch("images/readImages", null, { root: true });
         dispatch("apps/readApps", null, { root: true });
-        commit("snackbar/setMessage", `${Name} has been ${Action}ed.`, {
+        commit("snackbar/setMessage", `${Name} has been ${past_tense_action}.`, {
           root: true
         });
       })
