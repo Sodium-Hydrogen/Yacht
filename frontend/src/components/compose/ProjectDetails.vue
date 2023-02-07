@@ -176,7 +176,11 @@
               <v-row no-gutters style="max-height: 20px">
                 <v-col cols="2">{{ service }} </v-col>
                 <v-col cols="5" class="text--secondary">
-                  ({{ project.services[service].image || getImage(service) || "No Image" }})
+                  ({{
+                    project.services[service].image ||
+                      getImage(service) ||
+                      "No Image"
+                  }})
                 </v-col>
                 <v-col cols="2" class="text--secondary">
                   {{
@@ -316,14 +320,24 @@
                 </v-list-item>
                 <v-list-item v-if="project.services[service].env_file">
                   <v-list-item-content> Env File </v-list-item-content>
-                  <v-list-item-content>
-                    {{ project.services[service].env_file.join(", ") }}
+                  <v-list-item-content
+                    v-for="env_file in project.services[service].env_file"
+                    :key="env_file"
+                  >
+                    <v-btn small @click="editProject(project.name)">
+                      {{ env_file }}
+                      <v-icon small>mdi-file-document-edit-outline</v-icon>
+                    </v-btn>
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="project.services[service].depends_on">
                   <v-list-item-content> Depends on </v-list-item-content>
                   <v-list-item-content>
-                    {{ Object.keys(project.services[service].depends_on).join(", ") }}
+                    {{
+                      Object.keys(project.services[service].depends_on).join(
+                        ", "
+                      )
+                    }}
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="project.services[service].restart">
@@ -632,10 +646,7 @@ export default {
         `${this.project.name}[_-]${name}[_-]\\d+`,
         "i"
       );
-      var image_regex = new RegExp(
-        `${this.project.name}[_-]${name}:\\w+`,
-        "i"
-      );
+      var image_regex = new RegExp(`${this.project.name}[_-]${name}:\\w+`, "i");
       for (var app in this.apps) {
         if (
           this.apps[app].name == name ||

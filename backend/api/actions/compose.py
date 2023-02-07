@@ -284,7 +284,8 @@ def write_compose(compose):
             pathlib.Path(settings.COMPOSE_DIR + compose.name).mkdir(parents=True)
         except Exception as exc:
             raise HTTPException(exc.status_code, exc.detail)
-    with open(settings.COMPOSE_DIR + compose.name + "/docker-compose.yml", "w") as f:
+    compose_name = find_yml_files(settings.COMPOSE_DIR + compose.name)[compose.name].split("/")[-1]
+    with open(settings.COMPOSE_DIR + compose.name + "/" + compose_name, "w") as f:
         try:
             f.write(compose.content)
             f.close()
@@ -306,16 +307,21 @@ it exists. This also deletes all files in the folder.
 
 
 def delete_compose(project_name):
+    try:
+        compose_name = find_yml_files(settings.COMPOSE_DIR + project_name)[project_name].split("/")[-1]
+    except:
+        compose_name = "docker-compose.yml"
+
     if not os.path.exists("/" + settings.COMPOSE_DIR + project_name):
         raise HTTPException(404, "Project directory not found.")
     elif not os.path.exists(
-        "/" + settings.COMPOSE_DIR + project_name + "/docker-compose.yml"
+        "/" + settings.COMPOSE_DIR + project_name + "/" + compose_name
     ):
         raise HTTPException(404, "Project docker-compose.yml not found.")
     else:
         try:
             with open(
-                "/" + settings.COMPOSE_DIR + project_name + "/docker-compose.yml"
+                "/" + settings.COMPOSE_DIR + project_name + "/" + compose_name
             ):
                 pass
         except OSError as exc:
