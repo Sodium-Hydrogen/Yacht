@@ -771,7 +771,7 @@
         <v-card-text>
           This will remove the currently running container and deploy a new one
           with the settings in this form. Please make sure your container data
-          is persistant or backed up.
+          is persistent or backed up.
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>

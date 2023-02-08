@@ -120,7 +120,7 @@
             </v-menu>
           </v-col>
           <v-col class="text-right">
-            <v-btn @click="editProject(project.name)">
+            <v-btn @click="editProject(project.name)" class="mr-2">
               Edit
               <v-icon>mdi-file-document-edit-outline</v-icon>
             </v-btn>
@@ -615,8 +615,8 @@ export default {
       readApps: "apps/readApps",
       readImages: "images/readImages"
     }),
-    editProject(projectname) {
-      this.$router.push({ path: `/projects/${projectname}/edit` });
+    editProject(projectName) {
+      this.$router.push({ path: `/projects/${projectName}/edit` });
     },
     postDelete() {
       this.$router.push({ name: "View Projects" });

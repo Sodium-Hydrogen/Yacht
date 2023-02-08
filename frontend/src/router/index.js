@@ -157,6 +157,11 @@ const routes = [
         component: ProjectEditor
       },
       {
+        name: "Edit Project Env File",
+        path: ":projectName/env/:envFile",
+        component: ProjectEditor
+      },
+      {
         name: "Project Details",
         path: ":projectName",
         component: ProjectDetails
