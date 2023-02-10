@@ -10,6 +10,14 @@
     </v-card-text>
     <h2 class="font-weight-bold ml-5">
       API Keys
+      <a
+        href="/api/docs"
+        class="mr-3"
+        target="_blank"
+        style="text-decoration: none;"
+      >
+        <v-icon small>mdi-help-circle-outline</v-icon>
+      </a>
       <v-dialog id="keyModal" v-model="keyDialog" max-width="500">
         <template v-slot:activator="{ on, attrs }">
           <v-btn color="primary" v-bind="attrs" v-on="on">
@@ -23,7 +31,7 @@
           <v-card-text>
             API Keys should be treated as a password and should only be provided
             to applications you trust. Once this box is closed you will be
-            unable to retrive this key so be sure to copy it and test your
+            unable to retrieve this key so be sure to copy it and test your
             application first.
             <br />
             <v-form>

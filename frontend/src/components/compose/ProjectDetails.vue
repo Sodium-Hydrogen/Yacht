@@ -120,7 +120,10 @@
             </v-menu>
           </v-col>
           <v-col class="text-right">
-            <v-btn @click="editProject(project.name)" class="mr-2">
+            <v-btn
+              @click="editProject({ ProjectName: project.name })"
+              class="mr-2"
+            >
               Edit
               <v-icon>mdi-file-document-edit-outline</v-icon>
             </v-btn>
@@ -324,7 +327,15 @@
                     v-for="env_file in project.services[service].env_file"
                     :key="env_file"
                   >
-                    <v-btn small @click="editProject(project.name)">
+                    <v-btn
+                      small
+                      @click="
+                        editProject({
+                          ProjectName: project.name,
+                          EnvFile: env_file
+                        })
+                      "
+                    >
                       {{ env_file }}
                       <v-icon small>mdi-file-document-edit-outline</v-icon>
                     </v-btn>
@@ -615,8 +626,14 @@ export default {
       readApps: "apps/readApps",
       readImages: "images/readImages"
     }),
-    editProject(projectName) {
-      this.$router.push({ path: `/projects/${projectName}/edit` });
+    editProject({ ProjectName, EnvFile }) {
+      if (EnvFile) {
+        this.$router.push({
+          path: `/projects/${ProjectName}/env/${encodeURI(EnvFile)}`
+        });
+      } else {
+        this.$router.push({ path: `/projects/${ProjectName}/edit` });
+      }
     },
     postDelete() {
       this.$router.push({ name: "View Projects" });

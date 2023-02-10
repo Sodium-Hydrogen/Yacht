@@ -14,12 +14,10 @@ from api.utils.compose import find_yml_files
 
 settings = Settings()
 
-"""
-Runs an action on the specified compose project.
-"""
-
-
 def compose_action(name, action):
+    """
+    Runs an action on the specified compose project.
+    """
     files = find_yml_files(settings.COMPOSE_DIR)
     compose = get_compose(name)
     env = os.environ.copy()
@@ -72,25 +70,16 @@ def compose_action(name, action):
     print(_output)
     return get_compose_projects()
 
-
-"""
-Used to include the DOCKER_HOST in the shell env
-when someone ups a compose project or returns a
-useless var to just clear the shell env.
-"""
-
-
 def check_dockerhost(environment):
+    """
+    Used to include the DOCKER_HOST in the shell env
+    when someone ups a compose project or returns a
+    useless var to just clear the shell env.
+    """
     if environment.get("DOCKER_HOST"):
         return {"DOCKER_HOST": environment["DOCKER_HOST"]}
     else:
         return {"clear_env": "true"}
-
-
-"""
-Used to run docker-compose commands on specific 
-apps in compose projects.
-"""
 
 
 def compose_app_action(
@@ -98,7 +87,10 @@ def compose_app_action(
     action,
     app,
 ):
-
+    """
+    Used to run docker-compose commands on specific 
+    apps in compose projects.
+    """
     files = find_yml_files(settings.COMPOSE_DIR)
     compose = get_compose(name)
     env = os.environ.copy()
@@ -184,14 +176,11 @@ def compose_app_action(
     print(output)
     return get_compose_projects()
 
-
-"""
-Checks for compose projects in the COMPOSE_DIR and
-returns most of the info inside them.
-"""
-
-
 def get_compose_projects():
+    """
+    Checks for compose projects in the COMPOSE_DIR and
+    returns most of the info inside them.
+    """
     files = find_yml_files(settings.COMPOSE_DIR)
 
     projects = []
@@ -224,14 +213,11 @@ def get_compose_projects():
             print("ERROR: " + file + " is invalid or empty!")
     return projects
 
-
-"""
-Returns detailed information on a specific compose
-project.
-"""
-
-
 def get_compose(name):
+    """
+    Returns detailed information on a specific compose
+    project.
+    """
     try:
         files = find_yml_files(settings.COMPOSE_DIR + name)
     except Exception as exc:
@@ -270,15 +256,12 @@ def get_compose(name):
     else:
         raise HTTPException(404, "Project " + name + " not found")
 
-
-"""
-Creates a compose directory (if one isn't there
-already) with the name of the project. Then writes
-the content of compose.content to it.
-"""
-
-
 def write_compose(compose):
+    """
+    Creates a compose directory (if one isn't there
+    already) with the name of the project. Then writes
+    the content of compose.content to it.
+    """
     if not os.path.exists(settings.COMPOSE_DIR + compose.name):
         try:
             pathlib.Path(settings.COMPOSE_DIR + compose.name).mkdir(parents=True)
@@ -299,14 +282,11 @@ def write_compose(compose):
 
     return get_compose(name=compose.name)
 
-
-"""
-Deletes a compose project after checking to see if
-it exists. This also deletes all files in the folder.
-"""
-
-
 def delete_compose(project_name):
+    """
+    Deletes a compose project after checking to see if
+    it exists. This also deletes all files in the folder.
+    """
     try:
         compose_name = find_yml_files(settings.COMPOSE_DIR + project_name)[project_name].split("/")[-1]
     except:
@@ -332,6 +312,44 @@ def delete_compose(project_name):
         raise HTTPException(exc.status_code, exc.strerror)
     return get_compose_projects()
 
+def is_safe_path(base_dir, target_file):
+    """
+    Checks if target_file is inside the base directory.
+    This is to prevent path traversal attacks.
+    """
+    match_path = os.path.abspath(target_file)
+    return (base_dir == os.path.commonpath((base_dir, match_path)), match_path)
+
+def get_project_file(project_name, file_name, skip_check=False):
+    """
+    Reads the contents of specified file from the
+    project directory.
+    """
+    safe_path, abs_path = is_safe_path(
+        settings.COMPOSE_DIR + project_name, settings.COMPOSE_DIR + project_name + "/" + file_name
+    )
+    if skip_check or safe_path:
+        content = ""
+        with open(abs_path, 'r') as project_file:
+            content = project_file.read()
+        return {"name": file_name, "content": content, "project": project_name}
+    else:
+        raise HTTPException(403, f"{file_name} is not in project directory.")
+
+def write_project_file(project_name, file_name, file_data):
+    """
+    Write the contents of specified file to the
+    project directory.
+    """
+    safe_path, abs_path = is_safe_path(
+        settings.COMPOSE_DIR + project_name, settings.COMPOSE_DIR + project_name + "/" + file_name
+    )
+    if safe_path:
+        with open(abs_path, 'w') as project_file:
+            project_file.write(file_data.content)
+        return get_project_file(project_name, file_name, skip_check=True)
+    else:
+        raise HTTPException(403, f"{file_name} is not in project directory.")
 
 def generate_support_bundle(project_name):
     files = find_yml_files(settings.COMPOSE_DIR + project_name)

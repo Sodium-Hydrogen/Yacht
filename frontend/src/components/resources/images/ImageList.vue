@@ -81,7 +81,7 @@
         </template>
         <template v-slot:item.RepoTags="{ item }">
           <div class="d-flex">
-            <span class="align-streatch text-truncate nametext mt-2">{{
+            <span class="align-stretch text-truncate nametext mt-2">{{
               item.RepoTags[0] || handleDigests(item) || ""
             }}</span>
             <v-spacer />
@@ -99,7 +99,7 @@
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   icon
-                  class="align-streatch"
+                  class="align-stretch"
                   size="small"
                   v-bind="attrs"
                   v-on="on"

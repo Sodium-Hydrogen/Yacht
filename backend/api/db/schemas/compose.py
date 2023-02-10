@@ -12,3 +12,10 @@ class ComposeWrite(Compose):
 
 class ComposeRead(ComposeWrite):
     path: str
+
+class ProjectFileWrite(BaseModel):
+    name: str
+    content: Optional[Any]
+
+class ProjectFileRead(ProjectFileWrite):
+    project: str

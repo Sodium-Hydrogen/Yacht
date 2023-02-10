@@ -13,14 +13,23 @@
         <div class="d-flex">
           <v-row>
             <v-col class="flex-grow-1 flex-shrink-0">
-              <v-card-title v-if="!this.existing" class="mt-1">
+              <v-card-title
+                v-if="this.composeTarget && !this.existing"
+                class="mt-1"
+              >
                 New Compose Template
               </v-card-title>
-              <v-card-title v-if="this.existing" class="mt-1">
-                Edit {{ this.form.name }} Project
+              <v-card-title
+                v-if="this.composeTarget && this.existing"
+                class="mt-1"
+              >
+                Edit {{ this.projectName }} Project
+              </v-card-title>
+              <v-card-title v-if="!this.composeTarget" class="mt-1">
+                Edit {{ this.projectName }} Env File: {{ form.name }}
               </v-card-title>
             </v-col>
-            <v-col class="flex-grow-1 flex-shrink-0">
+            <v-col v-if="this.composeTarget" class="flex-grow-1 flex-shrink-0">
               <v-text-field
                 v-if="!this.existing"
                 class="mr-3"
@@ -45,7 +54,7 @@
         <editor
           v-model="form.content"
           @init="editorInit"
-          lang="yaml"
+          :lang="editorLang()"
           :theme="editorTheming()"
           :height="windowHeight"
           :width="windowWidth"
@@ -68,11 +77,7 @@
           <v-btn text @click="confirmDiscard = false">
             Keep Editing
           </v-btn>
-          <v-btn
-            text
-            color="error"
-            @click="$router.push({ path: `/projects/${form.name}` });"
-          >
+          <v-btn text color="error" @click="confirmDiscardAction()">
             Discard
           </v-btn>
         </v-card-actions>
@@ -87,12 +92,14 @@ import axios from "axios";
 export default {
   data() {
     return {
+      composeTarget: true,
       confirmDiscard: false,
       existing: false,
       form: {
         name: "",
         content: null
       },
+      projectName: "",
       windowHeight: window.innerHeight - 205,
       windowWidth: window.innerWidth - 80
     };
@@ -105,13 +112,20 @@ export default {
       setErr: "snackbar/setErr"
     }),
     ...mapActions({
-      readProject: "projects/readProject"
+      readProject: "projects/readProject",
+      readProjectFile: "projects/readProjectFile"
     }),
     editorInit() {
       require("brace/mode/yaml");
       require("brace/mode/ini");
       require("brace/theme/twilight");
       require("brace/theme/textmate");
+    },
+    editorLang() {
+      if (this.composeTarget) {
+        return "yaml";
+      }
+      return "ini";
     },
     editorTheming() {
       if (this.$vuetify.theme.dark == false) {
@@ -121,32 +135,55 @@ export default {
       }
     },
     submitFile() {
-      let url = `/api/compose/${this.form.name}/edit`;
+      var url = `/api/compose/${this.projectName}/edit`;
+      if (!this.composeTarget) {
+        url += `file/${encodeURIComponent(this.form.name)}`;
+      }
       axios
         .post(url, this.form, {})
         .then(response => {
-          this.$router.push({ path: `/projects/${response.data.name}` });
+          this.$router.push({
+            path: `/projects/${response.data.project || response.data.name}`
+          });
         })
         .catch(err => {
           this.setErr(err);
         });
     },
+    confirmDiscardAction() {
+      if (this.projectName && this.projectName != "_") {
+        this.$router.push({ path: `/projects/${this.projectName}` });
+      } else {
+        this.$router.push({ path: "/projects" });
+      }
+    },
     closeEditor() {
-      let undoCounter = this.$refs.braceEditor.editor.session.$undoManager.
-        dirtyCounter;
+      let undoCounter = this.$refs.braceEditor.editor.session.$undoManager
+        .dirtyCounter;
       if (undoCounter > 0) {
         this.confirmDiscard = true;
+      } else if (this.projectName && this.projectName != "_") {
+        this.$router.push({ path: `/projects/${this.projectName}` });
       } else {
-        this.$router.push({ path: `/projects/${this.form.name}` });
+        this.$router.push({ path: "/projects" });
       }
     },
     async populateForm() {
-      const projectName = this.$route.params.projectName;
-      console.log(this);
-      if (projectName != "_" && projectName != null) {
-        const project = await this.readProject(projectName);
+      this.projectName = this.$route.params.projectName;
+      const envFile = this.$route.params.envFile;
+      this.composeTarget = envFile === undefined;
+      if (this.projectName != "_" && this.projectName != null) {
+        var project;
+        if (this.composeTarget) {
+          project = await this.readProject(this.projectName);
+        } else {
+          project = await this.readProjectFile({
+            Name: this.projectName,
+            FileName: envFile
+          });
+        }
         this.form = {
-          name: project.name || "",
+          name: project.name || envFile || "",
           content: project.content || ""
         };
         this.existing = true;

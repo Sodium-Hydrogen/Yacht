@@ -96,6 +96,36 @@ const actions = {
         });
     });
   },
+  readProjectFile({ commit }, { Name, FileName, ErrNotFound }) {
+    if (ErrNotFound === undefined) {
+      ErrNotFound = false;
+    }
+    const url = `/api/compose/${Name}/readfile/${encodeURIComponent(FileName)}`;
+    commit("setLoading", true);
+    return new Promise((resolve, reject) => {
+      axios
+        .get(url)
+        .then(response => {
+          const projectFile = response.data;
+          commit("setLoading", false);
+          commit("setProject", projectFile);
+          resolve(projectFile);
+        })
+        .finally(() => {
+          commit("setLoading", false);
+        })
+        .catch(error => {
+          if (ErrNotFound && error.response.status == 404) {
+            commit("snackbar/setErr", error, { root: true });
+          } else if (error.response.status == 404) {
+            console.log(`Not found ignored for ${error}.`);
+            resolve({ name: undefined, content: "" });
+          } else {
+            reject(error);
+          }
+        });
+    });
+  },
   writeProject({ commit }, payload) {
     commit("setLoading", true);
     const url = "/api/compose/";
@@ -118,13 +148,15 @@ const actions = {
     commit("setAction", Action);
     const url = `/api/compose/${Name}/actions/${Action}`;
     var past_tense_action;
-    switch(Action){
+    switch (Action) {
+      /* eslint-disable */
       case "up":     past_tense_action = "upped";   break;
       case "stop":   past_tense_action = "stopped"; break;
       case "build":  past_tense_action = "built";   break;
       case "create": past_tense_action = "created"; break;
       case "rm":     past_tense_action = "removed"; break;
       default: past_tense_action = `${Action}ed`;
+      /* eslint-enable */
     }
     axios
       .get(url)
@@ -133,9 +165,11 @@ const actions = {
         commit("setProjects", projects);
         dispatch("images/readImages", null, { root: true });
         dispatch("apps/readApps", null, { root: true });
-        commit("snackbar/setMessage", `${Name} has been ${past_tense_action}.`, {
-          root: true
-        });
+        commit(
+          "snackbar/setMessage",
+          `${Name} has been ${past_tense_action}.`,
+          { root: true }
+        );
       })
       .catch(err => {
         console.log(err);
@@ -151,13 +185,15 @@ const actions = {
     commit("setAction", Action);
     const url = `/api/compose/${Project}/actions/${Action}/${Name}`;
     var past_tense_action;
-    switch(Action){
+    switch (Action) {
+      /* eslint-disable */
       case "up":     past_tense_action = "upped";   break;
       case "stop":   past_tense_action = "stopped"; break;
       case "build":  past_tense_action = "built";   break;
       case "create": past_tense_action = "created"; break;
       case "rm":     past_tense_action = "removed"; break;
       default: past_tense_action = `${Action}ed`;
+      /* eslint-enable */
     }
     axios
       .get(url)
@@ -166,9 +202,11 @@ const actions = {
         commit("setProjects", projects);
         dispatch("images/readImages", null, { root: true });
         dispatch("apps/readApps", null, { root: true });
-        commit("snackbar/setMessage", `${Name} has been ${past_tense_action}.`, {
-          root: true
-        });
+        commit(
+          "snackbar/setMessage",
+          `${Name} has been ${past_tense_action}.`,
+          { root: true }
+        );
       })
       .catch(err => {
         commit("snackbar/setErr", err, { root: true });

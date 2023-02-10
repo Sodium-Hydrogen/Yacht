@@ -8,6 +8,8 @@ from api.actions.compose import (
     get_compose,
     write_compose,
     delete_compose,
+    get_project_file,
+    write_project_file,
     generate_support_bundle,
 )
 from api.auth.auth import auth_check
@@ -44,6 +46,17 @@ def write_compose_project(
     auth_check(Authorize)
     return write_compose(compose=compose)
 
+@router.get("/{project_name}/readfile/{file_name:path}", response_model=schemas.ProjectFileRead)
+def read_project_file( project_name, file_name, Authorize: AuthJWT = Depends()):
+    auth_check(Authorize)
+    return get_project_file(project_name, file_name)
+
+@router.post("/{project_name}/editfile/{file_name:path}", response_model=schemas.ProjectFileRead)
+def update_project_file(
+    project_name, file_name, file_data: schemas.ProjectFileWrite, Authorize: AuthJWT = Depends()
+):
+    auth_check(Authorize)
+    return write_project_file(project_name, file_name, file_data)
 
 @router.get("/{project_name}/actions/{action}/{app}")
 def get_compose_app_action(project_name, action, app, Authorize: AuthJWT = Depends()):
